@@ -27,7 +27,7 @@ public class MealServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        LOG.debug("redirect to mealList");
+        LOG.debug("redirect to meals");
         List<Meal> mealList = Arrays.asList(
                 new Meal(LocalDateTime.of(2015, Month.MAY, 30, 10, 0), "Завтрак", 500),
                 new Meal(LocalDateTime.of(2015, Month.MAY, 30, 13, 0), "Обед", 1000),
@@ -40,8 +40,8 @@ public class MealServlet extends HttpServlet {
         List<MealWithExceed> filteredMealsWithExceeded =
                 getFilteredWithExceeded(mealList, LocalTime.of(0, 0), LocalTime.of(23, 0), 2000);
 
-        req.setAttribute("mealList", filteredMealsWithExceeded);
-        RequestDispatcher Dispatcher = getServletContext().getRequestDispatcher("/mealList.jsp");
+        req.setAttribute("meals", filteredMealsWithExceeded);
+        RequestDispatcher Dispatcher = getServletContext().getRequestDispatcher("/meals.jsp");
 
         Dispatcher.forward(req, resp);
     }
