@@ -1,6 +1,8 @@
 package ru.javawebinar.topjava.model;
 
 public class BaseEntity {
+    public static final int START_SEQ = 100000;
+
     protected Integer id;
 
     public BaseEntity() {
@@ -19,11 +21,29 @@ public class BaseEntity {
     }
 
     public boolean isNew() {
-        return (this.id == null);
+        return this.id == null;
     }
 
     @Override
     public String toString() {
         return String.format("Entity %s (%s)", getClass().getName(), getId());
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        BaseEntity that = (BaseEntity) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id == null ? 0 : id;
+    }
+
 }
