@@ -1,16 +1,33 @@
 package ru.javawebinar.topjava.model;
 
-import javax.persistence.FetchType;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+@NamedQueries({
+        @NamedQuery(name = Meal.GET_ALL,
+                query = "SELECT um FROM Meal um WHERE um.user.id = :userId ORDER BY um.dateTime DESC"),
+        @NamedQuery(name = Meal.GET_BETWEEN,
+                query = "SELECT um FROM Meal um WHERE um.dateTime BETWEEN :startDate AND :endDate AND um.user.id = :userId ORDER BY um.dateTime DESC")})
+@Entity
+@Table(name = "meals")
 public class Meal extends BaseEntity {
+    public static final String GET_ALL = "UserMeal.getAll";
+    public static final String GET_BETWEEN = "UserMeal.getBetween";
+
+    @Column(name = "date_time", nullable = false)
+    @NotNull
     private LocalDateTime dateTime;
 
+    @Column(name = "description", nullable = false)
+    @NotNull
     private String description;
 
+    @Column(name = "calories", nullable = false)
+    @Digits(fraction = 0, integer = 4)
     private int calories;
 
     @ManyToOne(fetch = FetchType.LAZY)
