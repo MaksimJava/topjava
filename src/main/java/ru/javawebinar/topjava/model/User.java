@@ -29,29 +29,29 @@ public class User extends AbstractNamedEntity {
     @Column(name = "email", nullable = false, unique = true)
     @Email
     @NotBlank
-    private String email;
+    protected String email;
 
     @Column(name = "password", nullable = false)
     @NotBlank
     @Length(min = 5)
-    private String password;
+    protected String password;
 
     @Column(name = "enabled", nullable = false, columnDefinition = "bool default true")
-    private boolean enabled = true;
+    protected boolean enabled = true;
 
     @Column(name = "registered", columnDefinition = "timestamp default now()")
     @NotNull
-    private Date registered = new Date();
+    protected Date registered = new Date();
 
     @Enumerated(EnumType.STRING)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
     @ElementCollection(fetch = FetchType.EAGER)
-    private Set<Role> roles;
+    protected Set<Role> roles;
 
     @Column(name = "calories_per_day", columnDefinition = "int default 2000")
     @Range(min = 10, max = 10000)
-    private int caloriesPerDay = DEFAULT_CALORIES_PER_DAY;
+    protected int caloriesPerDay = DEFAULT_CALORIES_PER_DAY;
 
     public User() {
     }

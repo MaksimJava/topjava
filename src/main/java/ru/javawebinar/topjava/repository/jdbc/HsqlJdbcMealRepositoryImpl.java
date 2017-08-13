@@ -1,49 +1,31 @@
 package ru.javawebinar.topjava.repository.jdbc;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.dao.support.DataAccessUtils;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
+import ru.javawebinar.topjava.Profiles;
 import ru.javawebinar.topjava.model.Meal;
-import ru.javawebinar.topjava.repository.MealRepository;
 
 import javax.sql.DataSource;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Created by Максим on 13.08.2017.
+ */
+
 @Repository
-public class JdbcMealRepositoryImpl implements MealRepository {
-
-    private static final RowMapper<Meal> ROW_MAPPER = BeanPropertyRowMapper.newInstance(Meal.class);
-
-    @Autowired
-    protected JdbcTemplate jdbcTemplate;
+@Profile(Profiles.HSQL_DB)
+public class HsqlJdbcMealRepositoryImpl extends JdbcMealRepositoryImpl {
+    protected static final RowMapper<Meal> ROW_MAPPER = new JdbcMapper();
 
     @Autowired
-    protected NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
-    protected SimpleJdbcInsert insertMeal;
-
-    @Autowired
-    public JdbcMealRepositoryImpl(DataSource dataSource) {
-        this.insertMeal = new SimpleJdbcInsert(dataSource)
-                .withTableName("meals")
-                .usingGeneratedKeyColumns("id");
-    }
-
-    @Autowired
-    public JdbcMealRepositoryImpl(DataSource dataSource, JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        this.insertMeal = new SimpleJdbcInsert(dataSource)
-                .withTableName("meals")
-                .usingGeneratedKeyColumns("id");
-
-        this.jdbcTemplate = jdbcTemplate;
-        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+    public HsqlJdbcMealRepositoryImpl(DataSource dataSource) {
+        super(dataSource);
     }
 
     @Override
@@ -52,15 +34,15 @@ public class JdbcMealRepositoryImpl implements MealRepository {
                 .addValue("id", meal.getId())
                 .addValue("description", meal.getDescription())
                 .addValue("calories", meal.getCalories())
-                .addValue("date_time", meal.getDateTime())
+                .addValue("date_time", Timestamp.valueOf(meal.getDateTime()))
                 .addValue("user_id", userId);
 
         if (meal.isNew()) {
             Number newId = insertMeal.executeAndReturnKey(map);
             meal.setId(newId.intValue());
         } else {
-            if (namedParameterJdbcTemplate.update("" +
-                            "UPDATE meals " +
+            if (namedParameterJdbcTemplate.update(
+                    "UPDATE meals " +
                             "   SET description=:description, calories=:calories, date_time=:date_time " +
                             " WHERE id=:id AND user_id=:user_id"
                     , map) == 0) {
@@ -77,9 +59,9 @@ public class JdbcMealRepositoryImpl implements MealRepository {
 
     @Override
     public Meal get(int id, int userId) {
-        List<Meal> meals = jdbcTemplate.query(
+        List<Meal> userMeals = jdbcTemplate.query(
                 "SELECT * FROM meals WHERE id = ? AND user_id = ?", ROW_MAPPER, id, userId);
-        return DataAccessUtils.singleResult(meals);
+        return DataAccessUtils.singleResult(userMeals);
     }
 
     @Override
@@ -92,6 +74,6 @@ public class JdbcMealRepositoryImpl implements MealRepository {
     public List<Meal> getBetween(LocalDateTime startDate, LocalDateTime endDate, int userId) {
         return jdbcTemplate.query(
                 "SELECT * FROM meals WHERE user_id=?  AND date_time BETWEEN  ? AND ? ORDER BY date_time DESC",
-                ROW_MAPPER, userId, startDate, endDate);
+                ROW_MAPPER, userId, Timestamp.valueOf(startDate), Timestamp.valueOf(endDate));
     }
 }
