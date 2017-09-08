@@ -23,4 +23,8 @@ public interface UserService {
     List<User> getAll();
 
     User getWithMeals(int id);
+
+    default void enabled(int id, boolean enabled) {
+        throw new UnsupportedOperationException();
+    }
 }
