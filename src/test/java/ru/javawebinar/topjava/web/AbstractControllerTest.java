@@ -12,13 +12,14 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
-import ru.javawebinar.topjava.AllActiveProfileResolver;
 import ru.javawebinar.topjava.repository.JpaUtil;
 import ru.javawebinar.topjava.service.UserService;
 
 import javax.annotation.PostConstruct;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static ru.javawebinar.topjava.Profiles.ACTIVE_DB;
+import static ru.javawebinar.topjava.Profiles.DB_IMPLEMENTATION;
 
 @ContextConfiguration({
         "classpath:spring/spring-app.xml",
@@ -28,7 +29,7 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 @WebAppConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional
-@ActiveProfiles(resolver = AllActiveProfileResolver.class)
+@ActiveProfiles({ACTIVE_DB, DB_IMPLEMENTATION})
 abstract public class AbstractControllerTest {
 
     private static final CharacterEncodingFilter CHARACTER_ENCODING_FILTER = new CharacterEncodingFilter();

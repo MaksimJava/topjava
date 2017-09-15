@@ -1,27 +1,34 @@
-var ajaxUrl = "ajax/profile/meals/";
+var ajaxUrl = 'ajax/profile/meals/';
 var datatableApi;
 
 function updateTable() {
     $.ajax({
         type: "POST",
-        url: ajaxUrl + "filter",
-        data: $("#filter").serialize(),
+        url: ajaxUrl + 'filter',
+        data: $('#filter').serialize(),
         success: updateTableByData
     });
-}
-
-function clearFilter() {
-    $("#filter")[0].reset();
-    $.get(ajaxUrl, updateTableByData);
+    return false;
 }
 
 $(function () {
-    datatableApi = $("#datatable").DataTable({
+    datatableApi = $('#datatable').DataTable({
+        "ajax": {
+            "url": ajaxUrl,
+            "dataSrc": ""
+        },
         "paging": false,
         "info": true,
         "columns": [
             {
-                "data": "dateTime"
+                "data": "dateTime",
+                "render": function (date, type, row) {
+                    if (type == 'display') {
+                        var dateObject = new Date(date);
+                        return '<span>' + dateObject.toISOString().substring(0, 10) + '</span>';
+                    }
+                    return date;
+                }
             },
             {
                 "data": "description"
@@ -30,12 +37,14 @@ $(function () {
                 "data": "calories"
             },
             {
-                "defaultContent": "Edit",
-                "orderable": false
+                "orderable": false,
+                "defaultContent": "",
+                "render": renderEditBtn
             },
             {
-                "defaultContent": "Delete",
-                "orderable": false
+                "orderable": false,
+                "defaultContent": "",
+                "render": renderDeleteBtn
             }
         ],
         "order": [
@@ -43,7 +52,19 @@ $(function () {
                 0,
                 "desc"
             ]
-        ]
+        ],
+        "createdRow": function (row, data, dataIndex) {
+            if (data.exceed) {
+                $(row).addClass('exceeded');
+            } else {
+                $(row).addClass('normal');
+            }
+        },
+        "initComplete": makeEditable
     });
-    makeEditable();
+
+    $('#filter').submit(function () {
+        updateTable();
+        return false;
+    });
 });

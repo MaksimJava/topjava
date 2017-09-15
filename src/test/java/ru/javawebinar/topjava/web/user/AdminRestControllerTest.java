@@ -16,7 +16,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static ru.javawebinar.topjava.TestUtil.userHttpBasic;
+import static ru.javawebinar.topjava.TestUtil.basic;
 import static ru.javawebinar.topjava.UserTestData.*;
 
 public class AdminRestControllerTest extends AbstractControllerTest {
@@ -26,43 +26,27 @@ public class AdminRestControllerTest extends AbstractControllerTest {
     @Test
     public void testGet() throws Exception {
         mockMvc.perform(get(REST_URL + ADMIN_ID)
-                .with(userHttpBasic(ADMIN)))
+                .with(basic(ADMIN)))
                 .andExpect(status().isOk())
                 .andDo(print())
-                // https://jira.spring.io/browse/SPR-14472
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(MATCHER.contentMatcher(ADMIN));
     }
 
     @Test
     public void testGetByEmail() throws Exception {
-        mockMvc.perform(get(REST_URL + "by?email=" + ADMIN.getEmail())
-                .with(userHttpBasic(ADMIN)))
+        mockMvc.perform(get(REST_URL + "by?email=" + USER.getEmail()).with(basic(ADMIN)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(MATCHER.contentMatcher(ADMIN));
+                .andExpect(MATCHER.contentMatcher(USER));
     }
 
     @Test
     public void testDelete() throws Exception {
-        mockMvc.perform(delete(REST_URL + USER_ID)
-                .with(userHttpBasic(ADMIN)))
+        mockMvc.perform(delete(REST_URL + USER_ID).with(basic(ADMIN)))
                 .andDo(print())
                 .andExpect(status().isOk());
         MATCHER.assertListEquals(Collections.singletonList(ADMIN), userService.getAll());
-    }
-
-    @Test
-    public void testGetUnauth() throws Exception {
-        mockMvc.perform(get(REST_URL))
-                .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    public void testGetForbidden() throws Exception {
-        mockMvc.perform(get(REST_URL)
-                .with(userHttpBasic(USER)))
-                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -70,21 +54,21 @@ public class AdminRestControllerTest extends AbstractControllerTest {
         User updated = new User(USER);
         updated.setName("UpdatedName");
         updated.setRoles(Collections.singletonList(Role.ROLE_ADMIN));
-        mockMvc.perform(put(REST_URL + USER_ID)
+        mockMvc.perform(put(REST_URL + USER_ID).with(basic(ADMIN))
                 .contentType(MediaType.APPLICATION_JSON)
-                .with(userHttpBasic(ADMIN))
                 .content(JsonUtil.writeValue(updated)))
                 .andExpect(status().isOk());
 
         MATCHER.assertEquals(updated, userService.get(USER_ID));
     }
 
+
     @Test
     public void testCreate() throws Exception {
         User expected = new User(null, "New", "new@gmail.com", "newPass", Role.ROLE_USER, Role.ROLE_ADMIN);
         ResultActions action = mockMvc.perform(post(REST_URL)
                 .contentType(MediaType.APPLICATION_JSON)
-                .with(userHttpBasic(ADMIN))
+                .with(basic(ADMIN))
                 .content(JsonUtil.writeValue(expected))).andExpect(status().isCreated());
 
         User returned = MATCHER.fromJsonAction(action);
@@ -96,8 +80,7 @@ public class AdminRestControllerTest extends AbstractControllerTest {
 
     @Test
     public void testGetAll() throws Exception {
-        TestUtil.print(mockMvc.perform(get(REST_URL)
-                .with(userHttpBasic(ADMIN)))
+        TestUtil.print(mockMvc.perform(get(REST_URL).with(basic(ADMIN)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(MATCHER.contentListMatcher(ADMIN, USER)));
