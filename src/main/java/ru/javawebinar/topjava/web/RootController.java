@@ -10,6 +10,8 @@ import ru.javawebinar.topjava.service.UserService;
 
 import javax.servlet.http.HttpServletRequest;
 
+import static ru.javawebinar.topjava.web.ExceptionInfoHandler.EXCEPTION_DUPLICATE_EMAIL;
+
 @Controller
 public class RootController {
     @Autowired

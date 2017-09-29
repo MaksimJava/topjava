@@ -1,16 +1,13 @@
 package ru.javawebinar.topjava.web.user;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.javawebinar.topjava.View;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.to.UserTo;
 import ru.javawebinar.topjava.util.UserUtil;
-import ru.javawebinar.topjava.util.ValidationUtil;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -36,17 +33,12 @@ public class AdminAjaxController extends AbstractUserController {
     }
 
     @PostMapping
-    public ResponseEntity<String> createOrUpdate(@Valid UserTo userTo, BindingResult result) {
-        if (result.hasErrors()) {
-            // TODO change to exception handler
-            return ValidationUtil.getErrorResponse(result);
-        }
+    public void createOrUpdate(@Validated(View.ValidatedRestUI.class) UserTo userTo) {
         if (userTo.isNew()) {
             super.create(UserUtil.createNewFromTo(userTo));
         } else {
             super.update(userTo, userTo.getId());
         }
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override

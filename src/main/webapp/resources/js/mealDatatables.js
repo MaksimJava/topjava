@@ -15,17 +15,25 @@ function clearFilter() {
     $.get(ajaxUrl, updateTableByData);
 }
 
+// http://api.jquery.com/jQuery.ajax/#using-converters
+$.ajaxSetup({
+    converters: {
+        "text json": function (stringData) {
+            var json = JSON.parse(stringData);
+            $(json).each(function () {
+                // console.log(this);
+                this.dateTime = this.dateTime.replace('T', ' ').substr(0, 16);
+            });
+            return json;
+        }
+    }
+});
+
 $(function () {
-    datatableApi = $("#datatable").DataTable({
-        "ajax": {
-            "url": ajaxUrl,
-            "dataSrc": ""
-        },
-        "paging": false,
-        "info": true,
+    datatableApi = $('#datatable').DataTable(extendsOpts({
         "columns": [
             {
-                "data": "dateTimeUI"
+                "data": "dateTime"
             },
             {
                 "data": "description"
@@ -52,9 +60,10 @@ $(function () {
         ],
         "createdRow": function (row, data, dataIndex) {
             $(row).addClass(data.exceed ? 'exceeded' : 'normal');
-        },
-        "initComplete": makeEditable
-    });
+        }
+    }));
+
+    $.datetimepicker.setLocale(localeCode);
 
 //  http://xdsoft.net/jqplugins/datetimepicker/
     var startDate = $('#startDate');
